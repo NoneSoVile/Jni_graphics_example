@@ -17,7 +17,8 @@ LOCAL_SRC_FILES := hello-jni.cpp  \
                    baseGraphics\BlockDXT.cpp   \
                    baseGraphics\NvFilePtr.cpp  \
                    baseGraphics\NvImage.cpp  \
-                   baseGraphics\NvImageDDS.cpp
+                   baseGraphics\NvImageDDS.cpp \
+                   baseGraphics\NvImageGL.cpp  \
 
 LOCAL_LDLIBS := -llog -landroid -lEGL -lGLESv2
 

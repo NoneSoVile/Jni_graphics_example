@@ -27,6 +27,7 @@ class MainClass {
 #include <baseGraphics/NvMatrix.h>
 #include <baseGraphics/NvMath.h>
 #include <baseGraphics/NvGLSLProgram.h>
+#include <baseGraphics/NvImageGL.h>
 nv::matrix4<float>  cc;
 using nv::matrix4f;
 using nv::vec4f;
@@ -34,6 +35,7 @@ using nv::vec4f;
 float m_PreviousX, m_PreviousY, m_DeltaX, m_DeltaY;
 float mAngleY = 0.0f, mAngleX = 0.0f;
 int m_ScreenWidth, m_ScreenHeight;
+int m_TexID;
 
 void checkGlError(const char* op) {
     for (GLint error = glGetError(); error; error
@@ -48,8 +50,7 @@ void printGLString(const char *name, GLenum s) {
     LOGI("GL %s = %s\n", name, v);
 }
 
-NvGLSLProgram* mTriangleProgram;
-GLuint gvPositionHandle;
+
 
 class BaseShader : public NvGLSLProgram
 {
@@ -61,14 +62,21 @@ public:
         bool success = setSourceFromFiles(vertexProgramPath, fragmentProgramPath);
         LOGI("setSourceFromFiles result = %d", success);
         positionAHandle = getAttribLocation("a_Position");
+        texCoordAHandle = getAttribLocation("a_TexCoord");
         colorAHandle = getAttribLocation("a_Color");
+        texUHandle = getUniformLocation("u_tTex");
 
         checkGlError("BaseShader");
     }
 
     GLint positionAHandle;
+    GLint texCoordAHandle;
     GLint colorAHandle;
+    GLint texUHandle;
 };
+
+BaseShader* mTriangleProgram;
+GLuint gvPositionHandle;
 
 bool setupGraphics(int w, int h) {
     printGLString("Version", GL_VERSION);
@@ -86,6 +94,16 @@ bool setupGraphics(int w, int h) {
     m_ScreenWidth = w;
     m_ScreenHeight = h;
 
+    m_TexID =
+            NvImageGL::UploadTextureFromDDSFile("textures/android_log.dds");
+    glBindTexture(GL_TEXTURE_2D, m_TexID);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    checkGlError("xx");
+
     return true;
 }
 
@@ -99,17 +117,17 @@ void updateTouchParameters(int previousX, int previousY, int deltaX, int deltaY)
     m_DeltaX = deltaX;
     m_DeltaY = deltaY;
     mAngleX += deltaY * 0.01f;
-    mAngleY += deltaX * 0.01f;
+    mAngleY -= deltaX * 0.01f;
 
 }
 
-GLfloat gTriangleVertices[] = { 0.0f, 1.0f,
-                               -1.0f,-1.0f,
-                                1.0f,-1.0f };
+static const float TRIANGLE_COORDS[] = {
+        0.0f, 1.0f, -0.0f, 1.0f,         0, 1.0f,
+        -1.0f, -1.0f, -0.0f, 1.0f,          0.0f, 0.0f,
+        1.0f,  -1.0f, -0.0f, 1.0f,         1.0f, 0.0f, };
 
 void renderFrame() {
     cc.make_identity();
-    nv::vec4f xxx;
     matrix4f tmp;
     cc = nv::rotationY(tmp, mAngleY);
     tmp.make_identity();
@@ -120,11 +138,17 @@ void renderFrame() {
 
     mTriangleProgram->enable();
     checkGlError("glUseProgram");
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_TexID);
+    glUniform1i(mTriangleProgram->texUHandle, 0);
     mTriangleProgram->setUniformMatrix4fv("uMVP", cc._array, 1, GL_FALSE);
-    glVertexAttribPointer(gvPositionHandle, 2, GL_FLOAT, GL_FALSE, 0, gTriangleVertices);
-    glEnableVertexAttribArray(gvPositionHandle);
+    glVertexAttribPointer(mTriangleProgram->positionAHandle, 4, GL_FLOAT, GL_FALSE, 6* sizeof(float), TRIANGLE_COORDS);
+    glVertexAttribPointer(mTriangleProgram->texCoordAHandle, 2, GL_FLOAT, GL_FALSE, 6* sizeof(float), TRIANGLE_COORDS + 4);
+    glEnableVertexAttribArray(mTriangleProgram->positionAHandle);
+    glEnableVertexAttribArray(mTriangleProgram->texCoordAHandle);
     glDrawArrays(GL_TRIANGLES, 0, 3);
-    glDisableVertexAttribArray(gvPositionHandle);
+    glDisableVertexAttribArray(mTriangleProgram->positionAHandle);
+    glDisableVertexAttribArray(mTriangleProgram->texCoordAHandle);
     mTriangleProgram->disable();
 }
 
