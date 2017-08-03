@@ -5,7 +5,7 @@
 #include <GLES2/gl2.h>
 #ifndef NV_GLSL_PROGRAM_H
 #define NV_GLSL_PROGRAM_H
-#define LOGI(...)
+
 typedef unsigned int GLenum;
 typedef unsigned int GLbitfield;
 typedef unsigned int GLuint;

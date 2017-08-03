@@ -6,6 +6,7 @@ import android.opengl.GLSurfaceView;
 import android.util.Log;
 import android.view.MotionEvent;
 
+
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.egl.EGLContext;
@@ -35,10 +36,6 @@ class GL2JNIView extends GLSurfaceView {
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
-        // MotionEvent reports input details from the touch screen
-        // and other input controls. In this case, you are only
-        // interested in events where the touch position changed.
-
         float x = e.getX();
         float y = e.getY();
 
@@ -47,32 +44,13 @@ class GL2JNIView extends GLSurfaceView {
 
                 float dx = x - mPreviousX;
                 float dy = y - mPreviousY;
-
-                // reverse direction of rotation above the mid-line
-                if (y > getHeight() / 2) {
-                    dx = dx * -1 ;
-                }
                 mDeltaX = dx;
-
-                // reverse direction of rotation to left of the mid-line
-                if (x < getWidth() / 2) {
-                    dy = dy * -1 ;
-                }
-
-                mDeltaY = dy;
-// No rendering for now - must send it to the NDK
-//                mRenderer.setAngle(
-//                        mRenderer.getAngle() +
-//                                ((dx + dy) * TOUCH_SCALE_FACTOR));  // = 180.0f / 320
-//                requestRender();
+                mDeltaY = -dy;
         }
 
         mPreviousX = x;
         mPreviousY = y;
-
         GL2JNILib.touchParameters(mPreviousX, mPreviousY, mDeltaX, mDeltaY);
-
-        //Log.w(TAG, "javaTouch " + mPreviousX + " " + mPreviousY);
 
         return true;
     }
@@ -329,7 +307,7 @@ class GL2JNIView extends GLSurfaceView {
         }
 
         public void onSurfaceChanged(GL10 gl, int width, int height) {
-            Log.d("blabla","onSurfaceChanged - calling initScreen()");
+
             GL2JNILib.initScreen(width, height);
         }
 

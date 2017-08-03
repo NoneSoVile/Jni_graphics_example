@@ -34,8 +34,10 @@
 #include "NvGLSLProgram.h"
 #include "NvAssetLoader.h"
 #include <string>
-
-
+#include <android/log.h>
+#define  LOG_TAG    "NvGLSLProgram"
+#define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
+#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 bool NvGLSLProgram::ms_logAllMissing = false;
 const char* NvGLSLProgram::ms_shaderHeader = NULL;
 

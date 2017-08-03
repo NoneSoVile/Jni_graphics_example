@@ -2,7 +2,10 @@
 #include <string>
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
-
+#define  LOG_TAG    "AssetLoaderAndroid"
+#define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
+#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+#include <android/log.h>
 static AAssetManager* s_assetManager = NULL;
 
 bool NvAssetLoaderInit(void* platform)
@@ -47,7 +50,7 @@ char *NvAssetLoaderRead(const char *filePath, int32_t &length)
         int32_t numBytes = AAsset_read(fileAsset, buff, length);
         buff[length] = '\0';
 
-        //LOGI("Read asset '%s', %d bytes", filePath, numBytes);
+        LOGI("Read asset '%s', %d bytes", filePath, numBytes);
         //LOGI(" %s\n", buff);
 
         AAsset_close(fileAsset);
